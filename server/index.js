@@ -35,28 +35,37 @@ async function getUpdates(offset) {
 async function processUpdates() {
   let offset = 0;
   while (true) {
-    const updates = await getUpdates(offset);
-    for (const update of updates) {
-      offset = update.update_id + 1;
-      const message = update.message;
-      const chatId = message.chat.id;
-      const text = message.text;
+    try {
+      const updates = await getUpdates(offset);
+      if (Array.isArray(updates) && updates.length > 0) {
+        for (const update of updates) {
+          offset = update.update_id + 1;
+          const message = update.message;
+          const chatId = message.chat.id;
+          const text = message.text;
 
-      if (text === '/start') {
-        await sendMessage(chatId, 'Welcome to Gachimuchi bot! Use /claim to get your coins.');
-      } else if (text === '/claim') {
-        userCoins += 10;
-        await sendMessage(chatId, `You have claimed 10 Gachi Coins. Your total is now ${userCoins} Gachi Coins.`);
-      } else if (text === '/tasks') {
-        const taskList = tasks.map(task => `${task.id}. ${task.description} - Reward: ${task.reward}`).join('\n');
-        await sendMessage(chatId, `Here are your tasks:\n${taskList}`);
-      } else if (text === '/referrals') {
-        const referralList = referrals.map(ref => `${ref.name} - Earned Coins: ${ref.earnedCoins}`).join('\n');
-        await sendMessage(chatId, `Here are your referrals:\n${referralList}\nInvite link: ${referralLink}`);
+          if (text === '/start') {
+            await sendMessage(chatId, 'Welcome to Gachimuchi bot! Use /claim to get your coins.');
+          } else if (text === '/claim') {
+            userCoins += 10;
+            await sendMessage(chatId, `You have claimed 10 Gachi Coins. Your total is now ${userCoins} Gachi Coins.`);
+          } else if (text === '/tasks') {
+            const taskList = tasks.map(task => `${task.id}. ${task.description} - Reward: ${task.reward}`).join('\n');
+            await sendMessage(chatId, `Here are your tasks:\n${taskList}`);
+          } else if (text === '/referrals') {
+            const referralList = referrals.map(ref => `${ref.name} - Earned Coins: ${ref.earnedCoins}`).join('\n');
+            await sendMessage(chatId, `Here are your referrals:\n${referralList}\nInvite link: ${referralLink}`);
+          } else {
+            await sendMessage(chatId, 'Sorry, I did not understand that command. Here are the commands you can use:\n/start\n/claim\n/tasks\n/referrals');
+          }
+        }
       } else {
-        await sendMessage(chatId, 'Sorry, I did not understand that command. Here are the commands you can use:\n/start\n/claim\n/tasks\n/referrals');
+        // console.log('No new updates'); // закомментируйте или удалите эту строку
       }
+    } catch (error) {
+      console.error('Error processing updates:', error);
     }
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 секундная задержка
   }
 }
 
@@ -69,6 +78,8 @@ async function sendMessage(chatId, text) {
 }
 
 processUpdates();
+
+app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
