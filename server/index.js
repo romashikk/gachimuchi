@@ -22,6 +22,7 @@ let tasks = [
 const TELEGRAM_BOT_TOKEN = '7178816361:AAG5Uta5gHX_o0Z6PG5OncVTKPDDQrroJls';
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 
+// Обработка вебхуков от Telegram
 app.post('/webhook', async (req, res) => {
   const { message } = req.body;
   if (message) {
@@ -29,7 +30,17 @@ app.post('/webhook', async (req, res) => {
     const username = message.from.username;
     const avatar = await getAvatar(message.from.id);
 
-    // Сохраните данные пользователя или выполните необходимые действия
+    console.log(`Received message from ${username}: ${message.text}`);
+
+    // Добавьте логику для обработки различных команд
+    if (message.text === '/start') {
+      sendMessage(chatId, 'Welcome to Gachimuchi bot! Use /claim to get your coins.');
+    } else if (message.text === '/claim') {
+      userCoins += 10;
+      sendMessage(chatId, `You have claimed 10 Gachi Coins. Your total is now ${userCoins} Gachi Coins.`);
+    } else {
+      sendMessage(chatId, 'Sorry, I did not understand that command.');
+    }
 
     res.send('Webhook received');
   } else {
@@ -37,6 +48,19 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
+// Функция для отправки сообщений
+async function sendMessage(chatId, text) {
+  await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text
+    })
+  });
+}
+
+// Получение аватара пользователя
 async function getAvatar(userId) {
   const response = await fetch(`${TELEGRAM_API_URL}/getUserProfilePhotos?user_id=${userId}`);
   const data = await response.json();
@@ -76,6 +100,10 @@ app.post('/api/tasks/:taskId/complete', (req, res) => {
   } else {
     res.status(404).json({ error: 'Задание не найдено' });
   }
+});
+
+app.listen(5000, () => {
+  console.log(`Server is running on http://localhost:5000`);
 });
 
 export default app;
