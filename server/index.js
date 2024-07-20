@@ -1,7 +1,12 @@
 import fetch from 'node-fetch';
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
@@ -36,7 +41,6 @@ async function processUpdates() {
       const chatId = message.chat.id;
       const text = message.text;
 
-      // Обработка сообщений
       if (text === '/start') {
         await sendMessage(chatId, 'Welcome to Gachimuchi bot! Use /claim to get your coins.');
       } else if (text === '/claim') {
@@ -109,8 +113,15 @@ app.post('/api/tasks/:taskId/complete', (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log(`Server is running on http://localhost:5000`);
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
 export default app;
