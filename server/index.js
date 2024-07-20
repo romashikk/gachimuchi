@@ -23,7 +23,7 @@ let tasks = [
   { id: 2, description: 'Пригласить друга', reward: 100, completed: false },
 ];
 
-const TELEGRAM_BOT_TOKEN = '7178816361:AAG5Uta5gHX_o0Z6PG5OncVTKPDDQrroJls';
+const TELEGRAM_BOT_TOKEN = 'YOUR_TELEGRAM_BOT_TOKEN';
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 
 async function getUpdates(offset) {
@@ -103,16 +103,17 @@ app.get('/api/tasks', (req, res) => {
 });
 
 app.post('/api/tasks/:taskId/complete', (req, res) => {
-  const taskId = parseInt(req.params.taskId, 10);
-  const task = tasks.find(t => t.id === taskId);
-  if (task) {
-    task.completed = true;
-    userCoins += task.reward;
-    res.json({ success: true });
-  } else {
-    res.status(404).json({ error: 'Задание не найдено' });
-  }
-});
+    const taskId = parseInt(req.params.taskId, 10);
+    const task = tasks.find(t => t.id === taskId);
+    if (task && !task.completed) {
+      task.completed = true;
+      userCoins += task.reward;
+      res.json({ success: true, coins: userCoins });
+    } else {
+      res.status(404).json({ error: 'Задание не найдено или уже выполнено' });
+    }
+  });
+  
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 
