@@ -60,7 +60,7 @@ async function processUpdates() {
           }
         }
       } else {
-        // console.log('No new updates'); // закомментируйте или удалите эту строку
+        console.log('No new updates'); // закомментируйте или удалите эту строку
       }
     } catch (error) {
       console.error('Error processing updates:', error);
@@ -82,7 +82,7 @@ processUpdates();
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hellof World!');
 });
 
 app.get('/users', (req, res) => {
